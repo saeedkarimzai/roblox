@@ -1,118 +1,46 @@
 <!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>BLOCKVERSE | Build, Play, Explore</title>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Roblox</title>
 <style>
-:root{--glass:rgba(15,20,35,.82);--line:rgba(255,255,255,.16);--cyan:#62e6ff;--pink:#ff77d5}
-*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#86c8ed;font-family:Inter,system-ui,Arial;color:#fff}canvas{display:block}
-#hud{position:fixed;inset:0;pointer-events:none}
-.panel{background:var(--glass);border:1px solid var(--line);border-radius:14px;backdrop-filter:blur(12px);box-shadow:0 12px 36px #10182b44}
-#brand{position:absolute;top:16px;left:18px;padding:11px 15px;font-weight:950;letter-spacing:1.5px;font-size:17px}#brand span{color:var(--cyan)}
-#stats{position:absolute;top:16px;right:18px;padding:10px 14px;text-align:right;font-size:12px;color:#c9d6ec;line-height:1.7}#stats b{color:white}
-#help{position:absolute;left:18px;bottom:18px;padding:12px 15px;font-size:12px;line-height:1.8;color:#d7e4f7}
-#crosshair{position:absolute;left:50%;top:50%;width:7px;height:7px;border:1.5px solid white;border-radius:50%;transform:translate(-50%,-50%);opacity:.85}
-#toast{position:absolute;left:50%;top:17%;transform:translateX(-50%);padding:10px 16px;font-size:13px;opacity:0;transition:opacity .2s}
-#hotbar{position:absolute;bottom:18px;left:50%;transform:translateX(-50%);display:flex;gap:7px;padding:8px;pointer-events:auto}
-.slot{width:53px;height:53px;border:1px solid var(--line);border-radius:10px;background:#10192dcc;display:grid;place-items:center;position:relative;cursor:pointer;font-size:22px}
-.slot small{position:absolute;top:3px;left:6px;font-size:9px;color:#b6c5dd}.slot.active{outline:2px solid var(--cyan);background:#17415bcc}
-#start{position:fixed;inset:0;display:grid;place-items:center;background:linear-gradient(140deg,#10172bdc,#152b4edc);z-index:5}
-#startCard{width:min(560px,92vw);padding:30px;text-align:center;border-radius:22px;background:#10182bf2;border:1px solid #ffffff25;box-shadow:0 30px 100px #0008}
-#start h1{font-size:clamp(38px,8vw,66px);line-height:1;margin:8px 0 12px;letter-spacing:-3px}#start h1 span{color:var(--cyan)}
-#start p{color:#aebed7;line-height:1.6;font-size:14px}
-button{border:0;border-radius:11px;padding:13px 22px;font-weight:850;color:#08111e;background:linear-gradient(100deg,var(--cyan),#9bffdb);cursor:pointer;font-size:14px}
-#start .sub{font-size:11px;color:#8192ad;margin-top:15px}
-#buildLabel{position:absolute;top:82px;left:50%;transform:translateX(-50%);padding:8px 13px;font-size:12px;display:none}
-#mobile{display:none;position:absolute;bottom:90px;left:18px;pointer-events:auto;gap:8px}
-#mobile button{padding:13px;background:#10192dcc;color:white;border:1px solid var(--line)}
-@media(max-width:700px){#help{display:none}#stats{font-size:10px}#mobile{display:flex}.slot{width:44px;height:44px}#hotbar{bottom:12px}}
-</style>
-</head>
-<body>
-<div id="start"><div id="startCard"><div style="font-size:12px;letter-spacing:3px;color:#62e6ff;font-weight:900">A NEW WORLD IS WAITING</div><h1>BLOCK<span>VERSE</span></h1><p>Explore a colourful 3D world, jump through an obstacle course, build anything from blocks, and make the map yours.</p><button id="play">PLAY NOW</button><div class="sub">Browser game • No account • Your builds save on this device</div></div></div>
-<div id="hud">
- <div id="brand" class="panel">BLOCK<span>VERSE</span></div>
- <div id="stats" class="panel">WORLD <b>Sunny Valley</b><br>MODE <b id="mode">Explore</b><br>BLOCKS <b id="count">0</b></div>
- <div id="crosshair"></div><div id="toast" class="panel"></div>
- <div id="buildLabel" class="panel">BUILD MODE · Left click place · Right click remove · B to exit</div>
- <div id="help" class="panel"><b>MOVE</b> WASD &nbsp; <b>JUMP</b> SPACE &nbsp; <b>SPRINT</b> SHIFT<br><b>BUILD</b> B &nbsp; <b>INTERACT</b> E &nbsp; <b>RESET</b> R<br><b>LOOK</b> Mouse &nbsp; <b>SELECT BLOCK</b> 1–6<br><span style="color:#62e6ff">Tip:</span> Walk into the glowing portal to reach the obby.</div>
- <div id="hotbar" class="panel">
-  <div class="slot active" data-i="0"><small>1</small>🟦</div><div class="slot" data-i="1"><small>2</small>🟥</div><div class="slot" data-i="2"><small>3</small>🟩</div><div class="slot" data-i="3"><small>4</small>🟨</div><div class="slot" data-i="4"><small>5</small>🟪</div><div class="slot" data-i="5"><small>6</small>⬜</div>
- </div>
- <div id="mobile"><button id="jumpBtn">JUMP</button><button id="buildBtn">BUILD</button></div>
-</div>
-<script type="module">
-import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
-const scene=new THREE.Scene();scene.background=new THREE.Color(0x8bcdf0);scene.fog=new THREE.Fog(0x8bcdf0,55,145);
-const camera=new THREE.PerspectiveCamera(70,innerWidth/innerHeight,.1,300);
-const renderer=new THREE.WebGLRenderer({antialias:true});renderer.setPixelRatio(Math.min(devicePixelRatio,1.7));renderer.setSize(innerWidth,innerHeight);renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.outputColorSpace=THREE.SRGBColorSpace;document.body.appendChild(renderer.domElement);
-scene.add(new THREE.HemisphereLight(0xdaf4ff,0x65734c,2));
-const sun=new THREE.DirectionalLight(0xfff2d4,2.4);sun.position.set(-35,55,25);sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);sun.shadow.camera.left=-65;sun.shadow.camera.right=65;sun.shadow.camera.top=65;sun.shadow.camera.bottom=-65;scene.add(sun);
-const mat=(c)=>new THREE.MeshStandardMaterial({color:c,roughness:.86});
-const grass=mat(0x65b957),darkGrass=mat(0x4d9c4b),wood=mat(0x8b5635),leaf=mat(0x2f9a58),stone=mat(0x858f9e);
-const floor=new THREE.Mesh(new THREE.BoxGeometry(180,2,180),grass);floor.position.y=-1;floor.receiveShadow=true;scene.add(floor);
-const solids=[];function addSolid(mesh,collide=true){scene.add(mesh);mesh.castShadow=true;mesh.receiveShadow=true;if(collide)solids.push(mesh);return mesh}
-function box(x,y,z,sx,sy,sz,m,collide=true){const o=new THREE.Mesh(new THREE.BoxGeometry(sx,sy,sz),m);o.position.set(x,y,z);return addSolid(o,collide)}
-// Rolling-looking green islands, paths and a central spawn plaza
-for(let i=0;i<18;i++){let a=i/18*Math.PI*2;let x=Math.cos(a)*38,z=Math.sin(a)*38;let hill=new THREE.Mesh(new THREE.CylinderGeometry(10,13,2.4,8),darkGrass);hill.position.set(x,-.1,z);addSolid(hill)}
-box(0,.05,0,22,.3,22,mat(0xadb9c4));box(0,.22,0,15,.12,15,mat(0xd8dce0),false);
-for(let x=-8;x<=8;x+=4)for(let z=-8;z<=8;z+=4)box(x,.31,z,3.7,.06,3.7,mat((x+z)%8===0?0xd1d7df:0xc0c9d2),false);
-// Trees
-for(let i=0;i<42;i++){let a=i*2.399,r=20+(i%7)*5,x=Math.cos(a)*r,z=Math.sin(a)*r;if(Math.abs(x)<13&&Math.abs(z)<13)continue;let trunk=new THREE.Mesh(new THREE.CylinderGeometry(.35,.5,3,7),wood);trunk.position.set(x,1.5,z);addSolid(trunk);let crown=new THREE.Mesh(new THREE.DodecahedronGeometry(2.1,0),leaf);crown.position.set(x,4,z);addSolid(crown)}
-// Buildings around spawn
-function building(x,z,w,d,h,color){box(x,h/2,z,w,h,d,mat(color));let roof=box(x,h+.25,z,w+.5,.5,d+.5,mat(0x34445c));for(let k=-1;k<=1;k+=2){box(x+k*w*.28,h*.55,z-d/2-.03,.9,1.4,.08,mat(0x7bdcff),false)}}
-building(-22,-7,9,8,8,0xe8a15b);building(23,-14,10,9,10,0x9a8be9);building(-26,17,8,8,7,0xe47b91);building(25,19,11,8,9,0x64b9a4);
-// Obby platforms to the east
-const obbyMats=[0xff6b6b,0xffc857,0x5de0a5,0x65c8ff,0xb48cff];
-for(let i=0;i<13;i++){let x=12+i*3.2,y=1.2+(i%3)*.65,z=30+(i%2)*3;box(x,y,z,2.7,.7,2.7,mat(obbyMats[i%5]));}
-box(54,1,34,7,2,7,mat(0xffd36a));
-const portal=new THREE.Mesh(new THREE.TorusGeometry(2.2,.22,12,40),new THREE.MeshStandardMaterial({color:0x67f5ff,emissive:0x1abbd0,emissiveIntensity:1.4}));portal.position.set(0,3,-17);addSolid(portal,false);
-// Player blocky avatar
-const player=new THREE.Group();scene.add(player);
-const skin=mat(0xf2bd91),shirt=mat(0x2878d0),pants=mat(0x263b66),hair=mat(0x3a2a25);
-function part(w,h,d,m,x,y,z){let o=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),m);o.position.set(x,y,z);o.castShadow=true;player.add(o);return o}
-part(1.15,1.25,.65,shirt,0,1.55,0);part(.82,.82,.72,skin,0,2.62,0);part(.88,.22,.78,hair,0,3.08,0);
-part(.42,1.15,.48,pants,-.3,.35,0);part(.42,1.15,.48,pants,.3,.35,0);
-part(.32,1.1,.38,skin,-.78,1.55,0);part(.32,1.1,.38,skin,.78,1.55,0);
-player.position.set(0,0,5);
-const body={pos:player.position,vel:new THREE.Vector3(),radius:.48,height:3.25,onGround:false};
-let yaw=0,pitch=-.18,locked=false,build=false,selected=0;const keys={};
-const blockColors=[0x398bff,0xf05d5e,0x45c77a,0xffcf4d,0xa77bff,0xe5edf7];const blockNames=['Blue','Red','Green','Yellow','Purple','White'];const placed=[];
-const raycaster=new THREE.Raycaster();const center=new THREE.Vector2(0,0);
-function toast(t){let e=document.querySelector('#toast');e.textContent=t;e.style.opacity=1;clearTimeout(toast.timer);toast.timer=setTimeout(()=>e.style.opacity=0,1800)}
-function setBuild(v){build=v;document.querySelector('#mode').textContent=build?'Build':'Explore';document.querySelector('#buildLabel').style.display=build?'block':'none';toast(build?'Build mode enabled':'Explore mode')}
-document.querySelector('#play').onclick=()=>{document.querySelector('#start').style.display='none';renderer.domElement.requestPointerLock?.()};
-document.addEventListener('pointerlockchange',()=>locked=document.pointerLockElement===renderer.domElement);
-renderer.domElement.addEventListener('click',()=>{if(document.querySelector('#start').style.display!=='none')return;if(!locked&&!build)renderer.domElement.requestPointerLock?.();else if(build)placeBlock()});
-document.addEventListener('mousemove',e=>{if(!locked)return;yaw-=e.movementX*.0022;pitch-=e.movementY*.0018;pitch=Math.max(-.95,Math.min(.45,pitch))});
-document.addEventListener('keydown',e=>{keys[e.code]=true;if(['Space','ArrowUp','ArrowDown'].includes(e.code))e.preventDefault();if(e.code==='KeyB')setBuild(!build);if(e.code==='KeyE')interact();if(e.code==='KeyR')resetPlayer();if(e.code.startsWith('Digit'))selectBlock(Number(e.code.slice(5))-1)});
-document.addEventListener('keyup',e=>keys[e.code]=false);
-document.addEventListener('contextmenu',e=>{if(build){e.preventDefault();removeBlock()}});
-function selectBlock(i){if(i<0||i>5)return;selected=i;document.querySelectorAll('.slot').forEach((s,j)=>s.classList.toggle('active',i===j))}
-document.querySelectorAll('.slot').forEach(s=>s.onclick=()=>selectBlock(Number(s.dataset.i)));
-function placeBlock(){raycaster.setFromCamera(center,camera);let hits=raycaster.intersectObjects(solids.concat(placed),false);let p;if(hits.length){let h=hits[0];p=h.point.clone().add(h.face.normal.clone().multiplyScalar(.51));p.set(Math.round(p.x),Math.max(.5,Math.round(p.y)),Math.round(p.z))}else{let dir=new THREE.Vector3();camera.getWorldDirection(dir);p=player.position.clone().add(dir.multiplyScalar(5));p.set(Math.round(p.x),.5,Math.round(p.z))}
-let b=new THREE.Mesh(new THREE.BoxGeometry(1,1,1),mat(blockColors[selected]));b.position.copy(p);addSolid(b);placed.push(b);document.querySelector('#count').textContent=placed.length;saveWorld()}
-function removeBlock(){raycaster.setFromCamera(center,camera);let h=raycaster.intersectObjects(placed,false)[0];if(!h)return;let i=placed.indexOf(h.object);if(i>=0){scene.remove(h.object);solids.splice(solids.indexOf(h.object),1);placed.splice(i,1);document.querySelector('#count').textContent=placed.length;saveWorld()}}
-function saveWorld(){try{localStorage.setItem('blockverse-world',JSON.stringify(placed.map(o=>({x:o.position.x,y:o.position.y,z:o.position.z,c:o.material.color.getHex()}))))}catch(e){}}
-function loadWorld(){try{let data=JSON.parse(localStorage.getItem('blockverse-world')||'[]');for(let p of data){let b=new THREE.Mesh(new THREE.BoxGeometry(1,1,1),mat(p.c));b.position.set(p.x,p.y,p.z);addSolid(b);placed.push(b)}}catch(e){}document.querySelector('#count').textContent=placed.length}
-function resetPlayer(){player.position.set(0,0,5);body.vel.set(0,0,0);toast('Back to spawn')}
-function interact(){let d=player.position.distanceTo(new THREE.Vector3(0,0,-17));if(d<5){player.position.set(12,0,30);toast('Obby started! Reach the golden platform.')}else if(player.position.distanceTo(new THREE.Vector3(54,1,34))<5){toast('OBBY COMPLETE! You made it!')}else toast('Nothing nearby to interact with')}
-loadWorld();
-function collidesAt(pos){let minX=pos.x-body.radius,maxX=pos.x+body.radius,minZ=pos.z-body.radius,maxZ=pos.z+body.radius;for(let o of solids){let b=new THREE.Box3().setFromObject(o);if(maxX>b.min.x&&minX<b.max.x&&maxZ>b.min.z&&minZ<b.max.z&&pos.y<b.max.y&&pos.y+body.height>b.min.y)return b}return null}
-function update(dt){let forward=new THREE.Vector3(-Math.sin(yaw),0,-Math.cos(yaw));let right=new THREE.Vector3(Math.cos(yaw),0,-Math.sin(yaw));let move=new THREE.Vector3();if(keys.KeyW||keys.ArrowUp)move.add(forward);if(keys.KeyS||keys.ArrowDown)move.sub(forward);if(keys.KeyD||keys.ArrowRight)move.add(right);if(keys.KeyA||keys.ArrowLeft)move.sub(right);if(move.lengthSq())move.normalize();let speed=(keys.ShiftLeft?10:6.2);body.vel.x=move.x*speed;body.vel.z=move.z*speed;
-if((keys.Space||keys.KeyW&&keys.Space)&&body.onGround){body.vel.y=10;body.onGround=false}body.vel.y-=25*dt;
-let old=player.position.clone();let next=player.position.clone();next.x+=body.vel.x*dt;let hit=collidesAt(next);if(hit){if(body.vel.x>0)next.x=hit.min.x-body.radius;else if(body.vel.x<0)next.x=hit.max.x+body.radius;body.vel.x=0}player.position.x=next.x;
-next.copy(player.position);next.z+=body.vel.z*dt;hit=collidesAt(next);if(hit){if(body.vel.z>0)next.z=hit.min.z-body.radius;else if(body.vel.z<0)next.z=hit.max.z+body.radius;body.vel.z=0}player.position.z=next.z;
-next.copy(player.position);next.y+=body.vel.y*dt;hit=collidesAt(next);if(hit){if(body.vel.y<0){next.y=hit.max.y;body.onGround=true}else next.y=hit.min.y-body.height;body.vel.y=0}else body.onGround=false;player.position.y=Math.max(-20,next.y);
-if(player.position.y< -10)resetPlayer();
-player.rotation.y=yaw;
-let target=new THREE.Vector3(player.position.x,player.position.y+2.2,player.position.z);let offset=new THREE.Vector3(Math.sin(yaw)*9,4.4+pitch*5,Math.cos(yaw)*9);camera.position.lerp(target.clone().add(offset),1-Math.pow(.001,dt));camera.lookAt(target);
-portal.rotation.z+=dt*.7;portal.rotation.y+=dt*.5;
-}
-let last=performance.now();function loop(now){requestAnimationFrame(loop);let dt=Math.min((now-last)/1000,.04);last=now;update(dt);renderer.render(scene,camera)}requestAnimationFrame(loop);
-function resize(){camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight)}addEventListener('resize',resize);
-document.querySelector('#jumpBtn').addEventListener('touchstart',e=>{e.preventDefault();if(body.onGround){body.vel.y=10;body.onGround=false}},{passive:false});
-document.querySelector('#buildBtn').onclick=()=>setBuild(!build);
-</script>
-</body></html>
+:root{--bg:#f7f7f8;--text:#191b1f;--muted:#70757d;--line:#e5e6e8;--dark:#232527;--blue:#335fff}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:14px Arial,Helvetica,sans-serif}button,input{font:inherit}button{cursor:pointer}.top{height:60px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:20px;padding:0 22px;position:sticky;top:0;z-index:10}.logo{font-weight:1000;font-size:25px;letter-spacing:-1.5px;color:#17191c;white-space:nowrap}.logo b{display:inline-grid;place-items:center;background:#17191c;color:white;width:25px;height:25px;margin-right:5px;font-size:17px;transform:rotate(0deg)}.search{height:36px;max-width:440px;flex:1;position:relative}.search input{width:100%;height:100%;border:1px solid #d9dade;border-radius:8px;padding:0 38px 0 13px;background:#f8f8f9;outline:none}.search input:focus{border-color:#8da2ff;background:#fff}.search span{position:absolute;right:12px;top:9px;color:#686d75}.toplinks{display:flex;gap:22px;margin-left:auto;align-items:center;font-weight:700}.toplinks a,.side a{color:inherit;text-decoration:none}.toplinks a:hover,.side a:hover{color:var(--blue)}.login{background:#fff;border:1px solid #bfc2c7;border-radius:8px;padding:9px 17px;font-weight:700}.signup{background:#335fff;color:white;border:0;border-radius:8px;padding:10px 16px;font-weight:700}.layout{display:grid;grid-template-columns:220px minmax(0,1fr);max-width:1500px;margin:auto}.side{position:sticky;top:60px;height:calc(100vh - 60px);padding:23px 15px 20px 22px;border-right:1px solid var(--line);background:#fff;overflow:auto}.sidegroup{margin-bottom:24px}.side h4{font-size:11px;color:#92969d;letter-spacing:1.1px;margin:0 0 10px 10px}.side a{height:39px;display:flex;align-items:center;gap:13px;padding:0 11px;border-radius:8px;font-weight:700}.side a.active{background:#edf1ff;color:#3158ef}.ico{width:20px;text-align:center;font-size:17px}.main{padding:25px 30px 60px;min-width:0}.welcome{display:flex;align-items:center;justify-content:space-between;margin-bottom:23px}.welcome h1{font-size:26px;margin:0 0 6px;letter-spacing:-.7px}.welcome p{margin:0;color:var(--muted)}.avatar{width:40px;height:40px;border-radius:50%;background:#e7e9ee;display:grid;place-items:center;font-size:21px}.sectionhead{display:flex;align-items:center;justify-content:space-between;margin:25px 0 14px}.sectionhead h2{font-size:20px;margin:0;letter-spacing:-.4px}.see{color:#335fff;font-weight:700;text-decoration:none}.filters{display:flex;gap:8px;overflow:auto;padding:2px 0 12px}.chip{border:1px solid #dfe1e5;background:#fff;padding:8px 14px;border-radius:20px;white-space:nowrap;font-weight:700;color:#555b64}.chip.active{background:#24272b;color:white;border-color:#24272b}.games{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:17px}.game{min-width:0;cursor:pointer}.thumb{aspect-ratio:1/1;border-radius:12px;overflow:hidden;position:relative;background:#ddd;transition:transform .15s,box-shadow .15s}.game:hover .thumb{transform:translateY(-3px);box-shadow:0 8px 20px #0002}.thumb svg{width:100%;height:100%;display:block}.game h3{font-size:14px;line-height:1.3;margin:9px 0 5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.meta{color:#777d85;font-size:12px}.meta b{color:#42474e;font-weight:600}.playtag{position:absolute;bottom:9px;right:9px;background:#111c;color:#fff;border-radius:6px;padding:5px 8px;font-size:11px;font-weight:700}.continue{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px}.continue .thumb{aspect-ratio:16/9}.banner{border-radius:14px;background:linear-gradient(105deg,#252a45,#5b6ed2);color:#fff;padding:22px 25px;display:flex;align-items:center;justify-content:space-between;margin:18px 0 24px;overflow:hidden}.banner h2{margin:0 0 6px;font-size:22px}.banner p{margin:0;color:#dfe4ff}.banner a{background:#fff;color:#283a9c;text-decoration:none;border-radius:8px;padding:11px 15px;font-weight:800;white-space:nowrap}.empty{padding:25px;color:#777}.modal{position:fixed;inset:0;background:#0008;display:none;place-items:center;z-index:30;padding:20px}.modal.show{display:grid}.dialog{background:#fff;width:min(500px,100%);border-radius:16px;padding:22px;box-shadow:0 25px 80px #0004}.dialogtop{display:flex;justify-content:space-between;align-items:center}.close{border:0;background:#eee;border-radius:50%;width:32px;height:32px;font-size:18px}.dialogart{height:190px;border-radius:12px;overflow:hidden;margin:15px 0}.dialogart svg{width:100%;height:100%}.dialog h2{margin:0 0 7px}.dialog p{color:#666;line-height:1.5}.dialogactions{display:flex;gap:10px;margin-top:18px}.dialogactions button{flex:1;border-radius:8px;padding:12px;font-weight:800;border:0}.launch{background:#335fff;color:#fff}.secondary{background:#eee;color:#222}.foot{color:#9a9da3;font-size:12px;margin-top:45px;border-top:1px solid var(--line);padding-top:18px}
+@media(max-width:1100px){.games{grid-template-columns:repeat(4,minmax(0,1fr))}.toplinks{gap:12px}.layout{grid-template-columns:190px minmax(0,1fr)}}@media(max-width:780px){.top{gap:12px;padding:0 12px}.toplinks a:not(.keep){display:none}.logo{font-size:21px}.search{max-width:none}.layout{display:block}.side{position:fixed;z-index:9;bottom:0;top:auto;height:58px;width:100%;border-right:0;border-top:1px solid var(--line);padding:5px 8px;display:flex;justify-content:space-around;overflow:hidden}.sidegroup{display:contents}.side h4{display:none}.side a{height:48px;display:flex;flex-direction:column;gap:2px;padding:5px 8px;font-size:10px}.ico{font-size:17px}.side a:nth-child(n+6){display:none}.main{padding:20px 15px 85px}.games{grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.continue{grid-template-columns:repeat(2,minmax(0,1fr))}.welcome h1{font-size:23px}.banner{padding:18px}.banner h2{font-size:18px}}@media(max-width:480px){.games{grid-template-columns:repeat(2,minmax(0,1fr))}.toplinks{gap:7px}.toplinks .login{padding:8px 10px}.toplinks .signup{padding:9px 10px}.search{max-width:150px}.banner a{font-size:11px;padding:9px}.welcome p{font-size:12px}}
+</style></head><body>
+<header class="top"><div class="logo"><b>◇</b>ROBLOX</div><div class="search"><input id="search" placeholder="Search" aria-label="Search experiences"><span>⌕</span></div><nav class="toplinks"><a href="#discover">Discover</a><a href="#market">Marketplace</a><a href="#create">Create</a><button class="login" id="loginBtn">Log In</button><button class="signup" id="signupBtn">Sign Up</button></nav></header>
+<div class="layout"><aside class="side"><div class="sidegroup"><h4>DISCOVER</h4><a class="active" href="#discover"><span class="ico">⌂</span>Home</a><a href="#discover"><span class="ico">◈</span>Discover</a><a href="#continue"><span class="ico">◷</span>Continue</a><a href="#popular"><span class="ico">♨</span>Popular</a><a href="#favorites"><span class="ico">♡</span>Favorites</a></div><div class="sidegroup"><h4>YOUR WORLD</h4><a href="#avatar"><span class="ico">♙</span>Avatar</a><a href="#messages"><span class="ico">✉</span>Messages</a><a href="#friends"><span class="ico">♧</span>Friends</a><a href="#inventory"><span class="ico">▣</span>Inventory</a></div><div class="sidegroup"><h4>CREATE</h4><a href="game.html"><span class="ico">＋</span>Create</a><a href="#studio"><span class="ico">▤</span>Creator Hub</a></div></aside>
+<main class="main" id="discover"><div class="welcome"><div><h1>Home</h1><p>Discover experiences made by creators around the world.</p></div><div class="avatar">😎</div></div>
+<div class="banner"><div><h2>Your next adventure starts here</h2><p>Jump into Blockverse, a 3D world built for exploring and creating.</p></div><a href="game.html">Play Blockverse ↗</a></div>
+<div class="sectionhead"><h2>Recommended For You</h2><a class="see" href="#popular">See All</a></div>
+<div class="filters" id="filters"><button class="chip active" data-filter="All">All</button><button class="chip" data-filter="Adventure">Adventure</button><button class="chip" data-filter="Obby">Obby</button><button class="chip" data-filter="Simulator">Simulator</button><button class="chip" data-filter="Roleplay">Roleplay</button><button class="chip" data-filter="Building">Building</button></div>
+<div class="games" id="games"></div>
+<div class="sectionhead" id="continue"><h2>Continue</h2><a class="see" href="#discover">View History</a></div><div class="continue" id="recent"></div>
+<div class="sectionhead" id="popular"><h2>Popular Experiences</h2><a class="see" href="#popular">See All</a></div><div class="games" id="popularGames"></div>
+<div class="foot">© 2026 Blockverse · This is an independent fan-made interface demo, not an official Roblox service. No real Roblox account or multiplayer connection is provided.</div>
+</main></div>
+<div class="modal" id="modal"><div class="dialog"><div class="dialogtop"><strong>EXPERIENCE</strong><button class="close" id="close">×</button></div><div class="dialogart" id="modalArt"></div><h2 id="modalTitle">Game</h2><div class="meta" id="modalMeta"></div><p id="modalDesc"></p><div class="dialogactions"><button class="launch" id="modalPlay">▶ Play</button><button class="secondary" id="fav">♡ Favorite</button></div></div></div>
+<script>
+const data=[
+['Blockverse','Building','🧱','Explore a bright 3D world, build with blocks and conquer the obby.','#56b8ee','#65c75e','NEW'],
+['Brookhaven RP','Roleplay','🏡','Hang out, roleplay and explore a town full of places.','#82d6f5','#f2c5a0',''],
+['Tower of Jump','Obby','🗼','Climb tricky stages and see how high you can go.','#f8a6b8','#9169d7',''],
+['Pet World','Simulator','🐾','Collect adorable pets and build your dream home.','#9ce5d0','#65a6e9',''],
+['Mega City Tycoon','Simulator','🏙️','Build a city, unlock upgrades and grow your empire.','#f8d37a','#e88c69',''],
+['Sky Islands','Adventure','☁️','Explore floating islands and uncover hidden treasures.','#80d7ed','#8e8cf2',''],
+['Fashion Studio','Roleplay','👗','Create outfits, style your avatar and hit the runway.','#f6a8d2','#a68bf2',''],
+['Speed Run','Obby','⚡','Race through colourful obstacle courses against the clock.','#f8c56b','#ed8069',''],
+['Cafe Life','Roleplay','☕','Run a cosy cafe, meet friends and serve customers.','#d9ad83','#8ccbb4',''],
+['Block Builder','Building','🏗️','Place pieces, design structures and make your own world.','#9bd1ff','#6c9ce9','']
+];
+const colors=['#f3a66e','#78c6f0','#b7a1f6','#70d9bb','#ffcf75','#78c8dc'];
+function art(item,i){let a=item[4],b=item[5],emoji=item[2];return '<svg viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="g'+i+'" x2="1" y2="1"><stop stop-color="'+a+'"/><stop offset="1" stop-color="'+b+'"/></linearGradient></defs><rect width="300" height="300" fill="url(#g'+i+')"/><circle cx="245" cy="55" r="54" fill="#fff" opacity=".18"/><path d="M0 225 Q75 170 150 225 T300 205 V300 H0Z" fill="#fff" opacity=".18"/><path d="M0 258 Q90 205 170 255 T300 240 V300 H0Z" fill="#172d48" opacity=".12"/><text x="150" y="175" text-anchor="middle" font-size="115">'+emoji+'</text><rect x="17" y="17" width="266" height="266" rx="18" fill="none" stroke="#fff" stroke-opacity=".3" stroke-width="3"/></svg>'}
+function card(item,i){return '<article class="game" data-name="'+item[0].toLowerCase()+'" data-category="'+item[1]+'" data-index="'+i+'"><div class="thumb">'+art(item,i)+(item[6]?'<span class="playtag">'+item[6]+'</span>':'')+'</div><h3>'+item[0]+'</h3><div class="meta">▶ <b>'+(['12.4K','8.2K','5.1K','3.8K','2.9K'][i%5])+'</b> &nbsp; · '+item[1]+'</div></article>'}
+function render(filter='All',query=''){let list=data.map((x,i)=>[x,i]).filter(([x])=>(filter==='All'||x[1]===filter)&&x[0].toLowerCase().includes(query.toLowerCase()));document.getElementById('games').innerHTML=list.map(([x,i])=>card(x,i)).join('')||'<div class="empty">No experiences found. Try another search.</div>';document.getElementById('popularGames').innerHTML=data.slice(3,8).map((x,i)=>card(x,i+3)).join('');document.getElementById('recent').innerHTML=[0,2,4,1].map(i=>'<article class="game" data-index="'+i+'"><div class="thumb">'+art(data[i],i)+'</div><h3>'+data[i][0]+'</h3><div class="meta">Played recently</div></article>').join('');}
+render();
+document.getElementById('filters').addEventListener('click',e=>{if(!e.target.matches('button'))return;document.querySelectorAll('.chip').forEach(x=>x.classList.toggle('active',x===e.target));render(e.target.dataset.filter,document.getElementById('search').value)});
+document.getElementById('search').addEventListener('input',e=>render(document.querySelector('.chip.active').dataset.filter,e.target.value));
+let chosen=0;document.addEventListener('click',e=>{let c=e.target.closest('[data-index]');if(!c)return;chosen=Number(c.dataset.index);let x=data[chosen];document.getElementById('modalTitle').textContent=x[0];document.getElementById('modalMeta').textContent='▶ 12.4K playing · '+x[1];document.getElementById('modalDesc').textContent=x[3];document.getElementById('modalArt').innerHTML=art(x,chosen);document.getElementById('modal').classList.add('show')});
+document.getElementById('close').onclick=()=>document.getElementById('modal').classList.remove('show');
+document.getElementById('modal').onclick=e=>{if(e.target.id==='modal')e.currentTarget.classList.remove('show')};
+document.getElementById('modalPlay').onclick=()=>{if(chosen===0)location.href='game.html';else alert('This experience is a visual demo card. Only Blockverse is playable in this project right now.')};
+document.getElementById('fav').onclick=e=>{e.target.textContent=e.target.textContent.includes('Added')?'♡ Favorite':'♥ Added to Favorites';};
+document.getElementById('loginBtn').onclick=()=>alert('This demo does not have real Roblox account login.');
+document.getElementById('signupBtn').onclick=()=>alert('This demo does not create Roblox accounts.'); 
+</script></body></html>
