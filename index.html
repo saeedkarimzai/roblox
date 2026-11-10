@@ -39,7 +39,7 @@ document.getElementById('search').addEventListener('input',e=>render(document.qu
 let chosen=0;document.addEventListener('click',e=>{let c=e.target.closest('[data-index]');if(!c)return;chosen=Number(c.dataset.index);let x=data[chosen];document.getElementById('modalTitle').textContent=x[0];document.getElementById('modalMeta').textContent='▶ 12.4K playing · '+x[1];document.getElementById('modalDesc').textContent=x[3];document.getElementById('modalArt').innerHTML=art(x,chosen);document.getElementById('modal').classList.add('show')});
 document.getElementById('close').onclick=()=>document.getElementById('modal').classList.remove('show');
 document.getElementById('modal').onclick=e=>{if(e.target.id==='modal')e.currentTarget.classList.remove('show')};
-document.getElementById('modalPlay').onclick=()=>{if(chosen===0)location.href='game.html';else alert('This experience is a visual demo card. Only Blockverse is playable in this project right now.')};
+document.getElementById('modalPlay').onclick=()=>{location.href=chosen===0?'game.html':'play.html?game='+encodeURIComponent(data[chosen][0])};
 document.getElementById('fav').onclick=e=>{e.target.textContent=e.target.textContent.includes('Added')?'♡ Favorite':'♥ Added to Favorites';};
 document.getElementById('loginBtn').onclick=()=>alert('This demo does not have real Roblox account login.');
 document.getElementById('signupBtn').onclick=()=>alert('This demo does not create Roblox accounts.'); 
